@@ -897,6 +897,7 @@ struct hv_device {
 	uuid_le dev_instance;
 
 	struct device device;
+	char *driver_override; /* Driver name to force a match */
 
 	struct vmbus_channel *channel;
 };
