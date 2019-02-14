@@ -358,24 +358,22 @@ void hv_ringbuffer_get_debuginfo(struct hv_ring_buffer_info *ring_info,
  *Initialize the ring buffer
  *
  */
-int hv_ringbuffer_init(struct hv_ring_buffer_info *ring_info,
-		   void *buffer, u32 buflen)
+void hv_ringbuffer_init(struct hv_ring_buffer_info *ring_info,
+		       struct page *pages, u32 page_cnt)
 {
-	if (sizeof(struct hv_ring_buffer) != PAGE_SIZE)
-		return -EINVAL;
+	BUILD_BUG_ON((sizeof(struct hv_ring_buffer) != PAGE_SIZE));
 
 	memset(ring_info, 0, sizeof(struct hv_ring_buffer_info));
 
-	ring_info->ring_buffer = (struct hv_ring_buffer *)buffer;
+	ring_info->ring_buffer = page_address(pages);
 	ring_info->ring_buffer->read_index =
 		ring_info->ring_buffer->write_index = 0;
 
-	ring_info->ring_size = buflen;
-	ring_info->ring_datasize = buflen - sizeof(struct hv_ring_buffer);
+	ring_info->ring_size = page_cnt << PAGE_SHIFT;
+	ring_info->ring_datasize = ring_info->ring_size -
+		sizeof(struct hv_ring_buffer);
 
 	spin_lock_init(&ring_info->ring_lock);
-
-	return 0;
 }
 
 /*

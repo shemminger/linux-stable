@@ -653,8 +653,9 @@ struct vmbus_channel {
 	u32 ringbuffer_gpadlhandle;
 
 	/* Allocated memory for ring buffer */
-	void *ringbuffer_pages;
+	struct page *ringbuffer_page;
 	u32 ringbuffer_pagecount;
+	u32 ringbuffer_send_offset;
 	struct hv_ring_buffer_info outbound;	/* send to parent */
 	struct hv_ring_buffer_info inbound;	/* receive from parent */
 	spinlock_t inbound_lock;
@@ -812,6 +813,15 @@ struct vmbus_channel_packet_multipage_buffer {
 	struct hv_multipage_buffer range;
 } __packed;
 
+
+int vmbus_alloc_ring(struct vmbus_channel *channel,
+		     u32 send_size, u32 recv_size);
+void vmbus_free_ring(struct vmbus_channel *channel);
+
+int vmbus_connect_ring(struct vmbus_channel *channel,
+		       void (*onchannel_callback)(void *context),
+		       void *context);
+int vmbus_disconnect_ring(struct vmbus_channel *channel);
 
 extern int vmbus_open(struct vmbus_channel *channel,
 			    u32 send_ringbuffersize,
